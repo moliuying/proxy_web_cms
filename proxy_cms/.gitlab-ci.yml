@@ -1,0 +1,24 @@
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  tags:
+    - docker
+  script:
+    - mkdir -p /code/hetu-node
+    - cp -r * /code/hetu-node
+
+deploy:
+  stage: deploy
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  tags:
+    - shell
+  script:
+    - cd ~/code/hetu-node
+    - docker-compose stop
+    - docker-compose -p hetu up -d --build

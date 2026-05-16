@@ -1,0 +1,25 @@
+.DS_Store
+node_modules/
+proxy_soft_my
+
+
+# local env files
+/proxy_soft
+key/
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+*.uri.ts
