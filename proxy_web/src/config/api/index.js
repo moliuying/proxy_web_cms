@@ -52,7 +52,7 @@ export function Ajax(url, data, method, headers) {
                 'Content-Type': 'application/json',
                 'uid': localStorage.getItem('uid'),
                 'token': localStorage.getItem('token'),
-                // ...headers
+                ...headers
             },
             params: method === 'get' ? data : {},
             data: data,

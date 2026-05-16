@@ -151,8 +151,12 @@
                         <!--                            <span>{{ item.text }}</span>-->
                         <!--                        </MenuItem>-->
                         <!--                    </Menu>-->
-                        <Menu :open-names="['user']" active-name="user_vip" theme="dark" width="auto"
+                        <Menu :open-names="['user']" :active-name="$route.name" theme="dark" width="auto"
                               :class="menuitemClasses" @on-select=" left_menu_select ">
+                            <MenuItem name="dashboard">
+                                <Icon type="md-analytics"></Icon>
+                                <span>数据大盘</span>
+                            </MenuItem>
                             <Submenu name="user">
                                 <template slot="title">
                                     <Icon type="ios-construct"></Icon>

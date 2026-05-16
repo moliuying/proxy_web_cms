@@ -12,6 +12,7 @@ import { Proxy, ProxySchema } from '../../core/schemas/proxy.schema'
 import { Taobao, TaobaoSchema } from '../../core/schemas/taobao.schema'
 import { Paylist, PaylistSchema } from '../../core/schemas/pay_list.schema'
 import { GroupList, GroupSchema } from '../../core/schemas/group_list.schema'
+import { Vip, VipSchema } from '../../core/schemas/vip.schema'
 
 @Module({
     controllers: [
@@ -30,6 +31,7 @@ import { GroupList, GroupSchema } from '../../core/schemas/group_list.schema'
             { name: Taobao.name, schema: TaobaoSchema },
             { name: Paylist.name, schema: PaylistSchema },
             { name: GroupList.name, schema: GroupSchema },
+            { name: Vip.name, schema: VipSchema },
         ])
     ]
 })

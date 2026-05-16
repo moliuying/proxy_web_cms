@@ -11,6 +11,7 @@ export class UserService {
         @InjectModel('Order') private readonly OrderModel,
         @InjectModel('Code') private readonly CodeModel,
         @InjectModel('Vip') private readonly VipModel,
+        @InjectModel('Bill') private readonly BillModel,
     ) {}
 
     async sureSetExpireDate(body,header) {
@@ -479,7 +480,13 @@ export class UserService {
                 '2' : 90,
                 '3': 365
             }
+            let priceObj = {
+                '1': 398,
+                '2': 798,
+                '3': 1698
+            }
             let custom_days = daysObj[vipCode['type']]
+            let money = priceObj[vipCode['type']] || 0
             expireDate = moment(expireDate).add(custom_days, 'days').format("YYYY-MM-DD")
             await this.UserModel.findOneAndUpdate({isDelete: false, _id: uid}, {
                 expireDate: expireDate
@@ -491,6 +498,17 @@ export class UserService {
                 use_uid: uid,
                 use_time: new Date()
             });
+            // 创建账单记录
+            await this.BillModel.create({
+                uid: uid,
+                prev_money: recordUserInfo.yue || 0,
+                add_money: money,
+                now_money: recordUserInfo.yue || 0,
+                custom_days: custom_days,
+                orderNo: 'VIPCODE_' + code,
+                recordWay: 3,
+                desc: '激活码充值'
+            })
             return {
                 success: true,
                 message: "激活成功，会员时间已延长",

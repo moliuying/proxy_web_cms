@@ -30,6 +30,7 @@ export class IndexService {
         @InjectModel('Taobao') private readonly TaobaoModel,
         @InjectModel('Paylist') private readonly PaylistModel,
         @InjectModel('GroupList') private readonly GrouplistModel,
+        @InjectModel('Vip') private readonly VipModel,
         @InjectConnection() private readonly connection: mongoose.Connection
     ) {
     }
@@ -544,6 +545,212 @@ export class IndexService {
         // 检测是否已存在
         let {version} = body
         return await this.TaobaoModel.find({version, isScrapy:true})
+    }
+
+    async getDashboardStats(body, header) {
+        let uid = header['uid']
+        let { periodType = '7days', paymentType = 'all' } = body
+        
+        let currentUser = await this.UserModel.findOne({_id: uid, isDelete: false})
+        let roleType = currentUser?.roleType || 0
+
+        let userQuery = {isDelete: false}
+        let orderQuery = {isDelete: false, ifGetVxResponse: true}
+        let billQuery = {isDelete: false}
+        let vipQuery = {isDelete: false}
+        let proxyQuery = {isDelete: false}
+
+        if (roleType != 1) {
+            userQuery['$or'] = [{ _id: uid }, { parent: uid }]
+            orderQuery['uid'] = uid
+            billQuery['uid'] = uid
+            vipQuery['create_uid'] = uid
+            proxyQuery['uid'] = uid
+        }
+
+        const todayStart = new Date()
+        todayStart.setHours(0, 0, 0, 0)
+        const todayEnd = new Date()
+        todayEnd.setHours(23, 59, 59, 999)
+
+        const sevenDaysAgo = new Date()
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+        sevenDaysAgo.setHours(0, 0, 0, 0)
+
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+        thirtyDaysAgo.setHours(0, 0, 0, 0)
+
+        const expireSoon = new Date()
+        expireSoon.setDate(expireSoon.getDate() + 7)
+
+        let trendStartDate = sevenDaysAgo
+        let dateFormat = '%Y-%m-%d'
+        
+        if (periodType === 'month') {
+            trendStartDate = new Date()
+            trendStartDate.setDate(1)
+            trendStartDate.setHours(0, 0, 0, 0)
+            dateFormat = '%Y-%m-%d'
+        } else if (periodType === 'year') {
+            trendStartDate = new Date()
+            trendStartDate.setMonth(0, 1)
+            trendStartDate.setHours(0, 0, 0, 0)
+            dateFormat = '%Y-%m'
+        }
+
+        const filteredBillQuery = {...billQuery}
+        if (paymentType === 'wechat') {
+            filteredBillQuery['recordWay'] = 1
+        } else if (paymentType === 'alipay') {
+            filteredBillQuery['recordWay'] = 2
+        } else if (paymentType === 'vipcode') {
+            filteredBillQuery['recordWay'] = 3
+        }
+
+        const [
+            totalUsers,
+            todayNewUsers,
+            totalVipUsers,
+            expireSoonUsers,
+            totalOrders,
+            todayOrders,
+            totalIncome,
+            todayIncome,
+            totalVipCodes,
+            usedVipCodes,
+            totalProxies,
+            recentBills,
+            incomeTrend,
+            recentUsers,
+            expireSoonUserList,
+            proxyPlatformStats,
+            recentProxies,
+            orderStatusStats,
+            recentOrders,
+            userGrowthTrend,
+            rechargeDistribution,
+            paymentTypeStats,
+            filteredTotalIncome
+        ] = await Promise.all([
+            this.UserModel.count(userQuery),
+            this.UserModel.count({...userQuery, createdAt: {$gte: todayStart, $lte: todayEnd}}),
+            this.UserModel.count({...userQuery, expireDate: {$gte: new Date()}}),
+            this.UserModel.count({...userQuery, expireDate: {$gte: new Date(), $lte: expireSoon}}),
+            this.OrderModel.count(orderQuery),
+            this.OrderModel.count({...orderQuery, createdAt: {$gte: todayStart, $lte: todayEnd}}),
+            this.BillModel.aggregate([
+                {$match: billQuery},
+                {$group: {_id: null, total: {$sum: '$add_money'}}}
+            ]),
+            this.BillModel.aggregate([
+                {$match: {...filteredBillQuery, createdAt: {$gte: todayStart, $lte: todayEnd}}},
+                {$group: {_id: null, total: {$sum: '$add_money'}}}
+            ]),
+            this.VipModel.count(vipQuery),
+            this.VipModel.count({...vipQuery, is_use: 1}),
+            this.ProxyModel.count(proxyQuery),
+            this.BillModel.find(filteredBillQuery).sort({createdAt: -1}).limit(10),
+            this.BillModel.aggregate([
+                {$match: {...filteredBillQuery, createdAt: {$gte: trendStartDate}}},
+                {$group: {
+                    _id: {$dateToString: {format: dateFormat, date: '$createdAt'}},
+                    income: {$sum: '$add_money'},
+                    count: {$sum: 1}
+                }},
+                {$sort: {_id: 1}}
+            ]),
+            this.UserModel.find(userQuery).sort({createdAt: -1}).limit(10).select('userName cellphone createdAt expireDate roleType yue'),
+            this.UserModel.find({...userQuery, expireDate: {$gte: new Date(), $lte: expireSoon}}).sort({expireDate: 1}).limit(10).select('userName cellphone expireDate'),
+            this.ProxyModel.aggregate([
+                {$match: proxyQuery},
+                {$group: {_id: '$pingtai', count: {$sum: 1}}},
+                {$sort: {count: -1}}
+            ]),
+            this.ProxyModel.find(proxyQuery).sort({createdAt: -1}).limit(10).populate('uid', 'userName').select('proxy_name pingtai proxy_ip createdAt'),
+            this.OrderModel.aggregate([
+                {$match: {...orderQuery, createdAt: {$gte: thirtyDaysAgo}}},
+                {$group: {_id: '$ifGetVxResponse', count: {$sum: 1}, totalAmount: {$sum: '$money'}}}
+            ]),
+            this.OrderModel.find(orderQuery).sort({createdAt: -1}).limit(10).populate('uid', 'userName').select('orderNo money type ifGetVxResponse createdAt'),
+            this.UserModel.aggregate([
+                {$match: {...userQuery, createdAt: {$gte: thirtyDaysAgo}}},
+                {$group: {
+                    _id: {$dateToString: {format: '%Y-%m-%d', date: '$createdAt'}},
+                    count: {$sum: 1}
+                }},
+                {$sort: {_id: 1}}
+            ]),
+            this.BillModel.aggregate([
+                {$match: filteredBillQuery},
+                {$group: {
+                    _id: {
+                        $cond: [
+                            {$lt: ['$add_money', 50]}, '0-50元',
+                            {$cond: [
+                                {$lt: ['$add_money', 100]}, '50-100元',
+                                {$cond: [
+                                    {$lt: ['$add_money', 500]}, '100-500元',
+                                    {$cond: [
+                                        {$lt: ['$add_money', 1000]}, '500-1000元',
+                                        '1000元以上'
+                                    ]}
+                                ]}
+                            ]}
+                        ]
+                    },
+                    count: {$sum: 1},
+                    total: {$sum: '$add_money'}
+                }},
+                {$sort: {count: -1}}
+            ]),
+            this.BillModel.aggregate([
+                {$match: filteredBillQuery},
+                {$group: {
+                    _id: '$recordWay',
+                    count: {$sum: 1},
+                    total: {$sum: '$add_money'}
+                }},
+                {$sort: {total: -1}}
+            ]),
+            this.BillModel.aggregate([
+                {$match: {...filteredBillQuery, createdAt: {$gte: trendStartDate}}},
+                {$group: {_id: null, total: {$sum: '$add_money'}}}
+            ])
+        ])
+
+        const vipTypeStats = await this.VipModel.aggregate([
+            {$match: vipQuery},
+            {$group: {_id: '$type', count: {$sum: 1}, used: {$sum: '$is_use'}}}
+        ])
+
+        return {
+            totalUsers,
+            todayNewUsers,
+            totalVipUsers,
+            expireSoonUsers,
+            totalOrders,
+            todayOrders,
+            totalIncome: totalIncome[0]?.total || 0,
+            todayIncome: todayIncome[0]?.total || 0,
+            totalVipCodes,
+            usedVipCodes,
+            unusedVipCodes: totalVipCodes - usedVipCodes,
+            totalProxies,
+            recentBills,
+            incomeTrend,
+            vipTypeStats,
+            recentUsers,
+            expireSoonUserList,
+            proxyPlatformStats,
+            recentProxies,
+            orderStatusStats,
+            recentOrders,
+            userGrowthTrend,
+            rechargeDistribution,
+            paymentTypeStats,
+            filteredTotalIncome: filteredTotalIncome[0]?.total || 0
+        }
     }
 
 }

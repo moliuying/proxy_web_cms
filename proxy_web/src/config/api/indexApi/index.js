@@ -8,4 +8,5 @@ export default {
     addOneRecod: () => '/index/addOneRecod',
     sureApply: () => '/index/sureApply',
     sureChangeShareVersion: () => '/index/sureChangeShareVersion',
+    getDashboardStats: () => '/index/getDashboardStats',
 }

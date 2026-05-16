@@ -5,7 +5,7 @@ import { Types } from 'mongoose';
 @Schema({ versionKey: false,timestamps: true })
 export class Proxy {
 
-    @Prop({required: true, type: Types.ObjectId, ref: 'user' })
+    @Prop({required: true, type: Types.ObjectId, ref: 'User' })
     uid: number;
 
     @Prop({ default: '' })

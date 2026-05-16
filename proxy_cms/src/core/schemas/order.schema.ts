@@ -18,7 +18,7 @@ import { Types } from 'mongoose';
 
 export class Order {
 
-    @Prop({required: true, type: Types.ObjectId, ref: 'user' })
+    @Prop({required: true, type: Types.ObjectId, ref: 'User' })
     uid: number; //下单人用户ID
 
     @Prop({ required: true })

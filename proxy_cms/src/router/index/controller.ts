@@ -236,4 +236,11 @@ export class IndexController {
         return  this.indexService.getAllTaoBaoData(body,Headers)
     }
 
+    @Post('getDashboardStats')
+    @UseGuards(AuthGuard)
+    async getDashboardStats(@Body() body,@Headers() Headers): Promise<any>{
+        // @ts-ignore
+        return  this.indexService.getDashboardStats(body,Headers)
+    }
+
 }

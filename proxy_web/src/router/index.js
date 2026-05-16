@@ -22,7 +22,7 @@ const router = new Router({
             children: [
                 {
                     path: '/',
-                    redirect: '/desc'
+                    redirect: '/dashboard'
                 },
                 {
                     name:"desc",
@@ -30,6 +30,15 @@ const router = new Router({
                     component: require('@/views/main/SoftDesc.vue').default,
                     meta: {
                         title: '软件介绍描述',
+                        keepAlive: true
+                    }
+                },
+                {
+                    name:"dashboard",
+                    path: '/dashboard',
+                    component: require('@/views/main/Dashboard.vue').default,
+                    meta: {
+                        title: '数据大盘',
                         keepAlive: true
                     }
                 },
@@ -160,7 +169,7 @@ router.beforeEach((to, from, next) => {
     
     if (uid && token) {
         if (to.name === 'login') {
-            next({name: 'user_vip'})
+            next({name: 'dashboard'})
         } else {
             next()
         }
