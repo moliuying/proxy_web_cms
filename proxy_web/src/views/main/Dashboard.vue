@@ -91,22 +91,28 @@
                     <h3>{{ periodTitle }}收入趋势</h3>
                     <div class="filter-group">
                         <div class="filter-item">
-                            <label>时间范围：</label>
-                            <Select v-model="periodType" style="width: 120px" @on-change="loadStats">
-                                <Option value="7days">近7天</Option>
-                                <Option value="month">本月</Option>
-                                <Option value="year">本年</Option>
-                            </Select>
-                        </div>
-                        <div class="filter-item">
-                            <label>支付方式：</label>
-                            <Select v-model="paymentType" style="width: 120px" @on-change="loadStats">
-                                <Option value="all">全部</Option>
-                                <Option value="wechat">微信</Option>
-                                <Option value="alipay">支付宝</Option>
-                                <Option value="vipcode">激活码</Option>
-                            </Select>
-                        </div>
+                        <label>时间范围：</label>
+                        <Select v-model="periodType" style="width: 120px" @on-change="loadStats">
+                            <Option value="7days">近7天</Option>
+                            <Option value="month">本月</Option>
+                            <Option value="months">近12个月</Option>
+                            <Option value="year">本年</Option>
+                        </Select>
+                    </div>
+                    <div class="filter-item">
+                        <label>支付方式：</label>
+                        <Select v-model="paymentType" style="width: 120px" @on-change="loadStats">
+                            <Option value="all">全部</Option>
+                            <Option value="wechat">微信</Option>
+                            <Option value="alipay">支付宝</Option>
+                            <Option value="vipcode">激活码</Option>
+                        </Select>
+                    </div>
+                    <div class="filter-item payment-hint">
+                        <Tooltip content="支付方式判断依据：微信支付(recordWay=1)、支付宝(recordWay=2)、激活码(recordWay=3)" placement="top">
+                            <Icon type="md-help-circle" :size="16" />
+                        </Tooltip>
+                    </div>
                     </div>
                 </div>
                 <div class="chart-summary">
@@ -447,6 +453,7 @@
                 const map = {
                     '7days': '近7天',
                     'month': '本月',
+                    'months': '近12个月',
                     'year': '本年'
                 }
                 return map[this.periodType] || '近7天'
@@ -454,18 +461,18 @@
             incomeChartData() {
                 return this.stats.incomeTrend.map(item => {
                     let date = item._id
-                    if (this.periodType === 'year') {
-                    const parts = item._id.split('-')
-                    date = parts[1] + '月'
-                } else {
-                    date = item._id.substr(5)
-                }
-                return {
-                    date: date,
-                    income: item.income,
-                    count: item.count
-                }
-            })
+                    if (this.periodType === 'year' || this.periodType === 'months') {
+                        const parts = item._id.split('-')
+                        date = parts[1] + '月'
+                    } else {
+                        date = item._id.substr(5)
+                    }
+                    return {
+                        date: date,
+                        income: item.income,
+                        count: item.count
+                    }
+                })
             },
             maxIncome() {
                 if (this.incomeChartData.length === 0) return 100
@@ -713,6 +720,11 @@
         font-size: 14px;
         color: #515a6e;
         margin: 0;
+    }
+
+    .payment-hint {
+        color: #808695;
+        cursor: help;
     }
 
     .chart-summary {

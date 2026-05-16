@@ -176,8 +176,9 @@
                                 </template>
                                 <MenuItem name="vip_list" v-if=" (uid === '63184d16b6b9fc06a00bdfae' || uid === '632191bed59dcc0a0f2abf46')"> 激活码列表 </MenuItem>
                                 <MenuItem name="user_list" v-if=" (uid === '63184d16b6b9fc06a00bdfae' || uid === '632191bed59dcc0a0f2abf46')"> 用户列表 </MenuItem>
-<!--                                <MenuItem name="user_getMoney_list" v-if=" (uid === '63184d16b6b9fc06a00bdfae' || uid === '632191bed59dcc0a0f2abf46')"> 提现申请列表 </MenuItem>-->
+                                <!-- <MenuItem name="user_getMoney_list" v-if=" (uid === '63184d16b6b9fc06a00bdfae' || uid === '632191bed59dcc0a0f2abf46')"> 提现申请列表 </MenuItem> -->
                                 <MenuItem name="user_info"> 个人中心 </MenuItem>
+                                <MenuItem name="login_devices"> 登录设备 </MenuItem>
                             </Submenu>
                         </Menu>
                     </Sider>

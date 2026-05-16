@@ -48,6 +48,31 @@
                 </FormItem>
             </Form>
         </div>
+        <div class="ms-login">
+            <div class="title">
+                安全管理
+            </div>
+            <div class="ms-content security-content">
+                <div class="security-item" @click="goToDevices">
+                    <div class="security-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <line x1="8" y1="21" x2="16" y2="21"/>
+                            <line x1="12" y1="17" x2="12" y2="21"/>
+                        </svg>
+                    </div>
+                    <div class="security-info">
+                        <div class="security-title">登录设备管理</div>
+                        <div class="security-desc">查看和管理您的登录设备，保护账户安全</div>
+                    </div>
+                    <div class="security-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 <script>
@@ -192,6 +217,9 @@
                         params: {userId: 123}
                     }
                 )
+            },
+            goToDevices() {
+                this.$router.push({ name: 'login_devices' })
             }
         }
     }
@@ -242,6 +270,77 @@
     }
     .ms-login:nth-child(3) .title::before{
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/%3E%3C/svg%3E");
+    }
+    .ms-login:nth-child(4) .title::before{
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/%3E%3C/svg%3E");
+    }
+
+    .security-content {
+        padding: 20px 30px;
+    }
+
+    .security-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+
+    .security-item:hover {
+        background: rgba(255, 255, 255, 0.8);
+        border-color: #e5e7eb;
+        transform: translateX(4px);
+    }
+
+    .security-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #dbeafe;
+        border-radius: 12px;
+        color: #2563eb;
+        flex-shrink: 0;
+    }
+
+    .security-icon svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .security-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .security-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 4px;
+    }
+
+    .security-desc {
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    .security-arrow {
+        width: 20px;
+        height: 20px;
+        color: #9ca3af;
+        flex-shrink: 0;
+    }
+
+    .security-arrow svg {
+        width: 100%;
+        height: 100%;
     }
 
     .ms-title {

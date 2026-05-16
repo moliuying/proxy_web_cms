@@ -504,7 +504,7 @@ export class IndexService {
         })
         //3 创建 bill账单 表
         await this.BillModel.create({
-            recordWay: 1,
+            recordWay: 2,
             orderNo: out_trade_no,
             prev_money: recordUserInfo.yue,
             add_money: money,
@@ -595,6 +595,12 @@ export class IndexService {
         } else if (periodType === 'year') {
             trendStartDate = new Date()
             trendStartDate.setMonth(0, 1)
+            trendStartDate.setHours(0, 0, 0, 0)
+            dateFormat = '%Y-%m'
+        } else if (periodType === 'months') {
+            trendStartDate = new Date()
+            trendStartDate.setMonth(trendStartDate.getMonth() - 12)
+            trendStartDate.setDate(1)
             trendStartDate.setHours(0, 0, 0, 0)
             dateFormat = '%Y-%m'
         }

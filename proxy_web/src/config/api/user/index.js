@@ -15,4 +15,6 @@ export default {
     delVipCode: () => '/user/delVipCode',
     activateVipCode: () => '/user/activateVipCode',
     getUserActivateRecords: () => '/user/getUserActivateRecords', // 获取用户激活记录
+    getLoginDevices: () => '/user/get_login_devices', // 获取登录设备列表
+    kickDevice: () => '/user/kick_device', // 踢出设备
 }

@@ -13,6 +13,7 @@ import { Taobao, TaobaoSchema } from '../../core/schemas/taobao.schema'
 import { Paylist, PaylistSchema } from '../../core/schemas/pay_list.schema'
 import { GroupList, GroupSchema } from '../../core/schemas/group_list.schema'
 import { Vip, VipSchema } from '../../core/schemas/vip.schema'
+import { LoginDevice, LoginDeviceSchema } from '../../core/schemas/login-device.schema'
 
 @Module({
     controllers: [
@@ -32,6 +33,7 @@ import { Vip, VipSchema } from '../../core/schemas/vip.schema'
             { name: Paylist.name, schema: PaylistSchema },
             { name: GroupList.name, schema: GroupSchema },
             { name: Vip.name, schema: VipSchema },
+            { name: LoginDevice.name, schema: LoginDeviceSchema },
         ])
     ]
 })

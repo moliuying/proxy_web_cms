@@ -9,6 +9,7 @@ import { Order,OrderSchema } from '../../core/schemas/order.schema'
 import {Code,CodeSchema} from "../../core/schemas/code.schema";
 import {Vip,VipSchema} from "../../core/schemas/vip.schema";
 import {Bill,BillSchema} from "../../core/schemas/bill.schema";
+import { LoginDevice, LoginDeviceSchema } from '../../core/schemas/login-device.schema';
 
 @Module({
     controllers: [
@@ -24,6 +25,7 @@ import {Bill,BillSchema} from "../../core/schemas/bill.schema";
             { name: Code.name, schema: CodeSchema },
             { name: Vip.name, schema: VipSchema },
             { name: Bill.name, schema: BillSchema },
+            { name: LoginDevice.name, schema: LoginDeviceSchema },
         ])
     ]
 })

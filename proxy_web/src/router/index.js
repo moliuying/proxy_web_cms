@@ -132,6 +132,15 @@ const router = new Router({
                         keepAlive: false
                     }
                 },
+                {
+                    name:"login_devices",
+                    path: '/login_devices',
+                    component: require('@/views/order/login_devices.vue').default,
+                    meta: {
+                        title: '登录设备',
+                        keepAlive: false
+                    }
+                },
             ]
         },
         {

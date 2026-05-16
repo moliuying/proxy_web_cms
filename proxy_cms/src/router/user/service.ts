@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 const moment = require('moment')
 import { passwordToMd5 } from '../../utils'
+import { createHash, randomBytes } from 'crypto'
 
 @Injectable()
 export class UserService {
@@ -12,6 +13,7 @@ export class UserService {
         @InjectModel('Code') private readonly CodeModel,
         @InjectModel('Vip') private readonly VipModel,
         @InjectModel('Bill') private readonly BillModel,
+        @InjectModel('LoginDevice') private readonly LoginDeviceModel,
     ) {}
 
     async sureSetExpireDate(body,header) {
@@ -556,7 +558,75 @@ export class UserService {
         return {ifOver: false}
     }
 
-    async login(body){
+    private parseUserAgent(ua: string) {
+        let deviceType = 'unknown'
+        let browser = 'unknown'
+        let os = 'unknown'
+        let deviceName = '未知设备'
+
+        if (/Mobile|Android|iPhone|iPad|iPod|Windows Phone/i.test(ua)) {
+            deviceType = 'mobile'
+            deviceName = '移动设备'
+        } else if (/Tablet|iPad/i.test(ua)) {
+            deviceType = 'tablet'
+            deviceName = '平板设备'
+        } else {
+            deviceType = 'desktop'
+            deviceName = '桌面设备'
+        }
+
+        if (/Chrome/i.test(ua) && !/Edg/i.test(ua)) {
+            browser = 'Chrome'
+        } else if (/Firefox/i.test(ua)) {
+            browser = 'Firefox'
+        } else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) {
+            browser = 'Safari'
+        } else if (/Edg/i.test(ua)) {
+            browser = 'Edge'
+        } else if (/MSIE|Trident/i.test(ua)) {
+            browser = 'IE'
+        }
+
+        if (/Windows NT 10/i.test(ua)) {
+            os = 'Windows 10/11'
+        } else if (/Windows NT 6/i.test(ua)) {
+            os = 'Windows 7/8'
+        } else if (/Mac OS X/i.test(ua)) {
+            os = 'macOS'
+        } else if (/Linux/i.test(ua)) {
+            os = 'Linux'
+        } else if (/Android/i.test(ua)) {
+            os = 'Android'
+        } else if (/iPhone|iPad|iPod/i.test(ua)) {
+            os = 'iOS'
+        }
+
+        if (/iPhone/i.test(ua)) {
+            deviceName = 'iPhone'
+        } else if (/iPad/i.test(ua)) {
+            deviceName = 'iPad'
+        } else if (/Macintosh/i.test(ua)) {
+            deviceName = 'Mac'
+        } else if (/Windows/i.test(ua)) {
+            deviceName = 'Windows PC'
+        }
+
+        return { deviceType, browser, os, deviceName }
+    }
+
+    private generateDeviceToken(): string {
+        return randomBytes(32).toString('hex')
+    }
+
+    private getClientIp(req: any): string {
+        const xForwardedFor = req.headers['x-forwarded-for']
+        if (xForwardedFor) {
+            return xForwardedFor.split(',')[0].trim()
+        }
+        return req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress || 'unknown'
+    }
+
+    async login(body, headers, req){
         if(body.password){
             body.password = passwordToMd5(body.password)
         }
@@ -579,9 +649,31 @@ export class UserService {
                     }
                 }
             }
-            //生成token 存库并且返回前端
-            await this.UserModel.findByIdAndUpdate(data['_id'],{token: Math.random().toString()})
-            return await this.UserModel.findOne(query)
+
+            const ip = this.getClientIp(req)
+            const userAgent = headers['user-agent'] || ''
+            const deviceFingerprint = headers['device-fingerprint'] || ''
+            const { deviceType, browser, os, deviceName } = this.parseUserAgent(userAgent)
+            const deviceToken = this.generateDeviceToken()
+
+            await this.LoginDeviceModel.create({
+                userId: data._id,
+                deviceToken,
+                ip,
+                userAgent,
+                deviceFingerprint,
+                deviceName,
+                deviceType,
+                browser,
+                os,
+                lastActiveAt: new Date()
+            })
+
+            await this.UserModel.findByIdAndUpdate(data._id, { token: deviceToken })
+
+            data = data.toObject()
+            data.token = deviceToken
+            return data
         }else{
             throw new Error("用户名或密码错误")
         }
@@ -595,18 +687,15 @@ export class UserService {
             isDelete: false,
             _id: uid
         })
-        // console.log(data)
         if(type){
             if(data){
-                //检查token
-                let tokenData =  await this.UserModel.findOne({
-                    isDelete: false,
-                    _id: uid,
-                    token
+                let device = await this.LoginDeviceModel.findOne({
+                    userId: uid,
+                    deviceToken: token,
+                    isActive: true
                 })
-                console.log(token)
-                if(tokenData){
-                    return tokenData
+                if(device){
+                    return data
                 }else{
                     throw new Error("账号已在别处登录，请联系管理员")
                 }
@@ -634,8 +723,57 @@ export class UserService {
                 return  data
             }
         }
+    }
 
+    async getLoginDevices(headers: any) {
+        const uid = headers['uid']
+        const currentToken = headers['token']
 
+        const devices = await this.LoginDeviceModel.find({
+            userId: uid,
+            isActive: true
+        }).sort({ createdAt: -1 })
+
+        return devices.map(device => {
+            const deviceObj = device.toObject()
+            deviceObj.isCurrent = deviceObj.deviceToken === currentToken
+            delete deviceObj.deviceToken
+            delete deviceObj.userAgent
+            return deviceObj
+        })
+    }
+
+    async kickDevice(body: any, headers: any) {
+        const uid = headers['uid']
+        const { deviceId } = body
+        const currentToken = headers['token']
+
+        if (!deviceId) {
+            throw new Error("设备ID不能为空")
+        }
+
+        const device = await this.LoginDeviceModel.findOne({
+            _id: deviceId,
+            userId: uid,
+            isActive: true
+        })
+
+        if (!device) {
+            throw new Error("设备不存在或已被踢出")
+        }
+
+        if (device.deviceToken === currentToken) {
+            throw new Error("不能踢出当前登录的设备")
+        }
+
+        await this.LoginDeviceModel.findByIdAndUpdate(deviceId, {
+            isActive: false
+        })
+
+        return {
+            success: true,
+            message: "设备已踢出"
+        }
     }
 }
 

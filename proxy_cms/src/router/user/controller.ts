@@ -1,4 +1,4 @@
-import { Controller,Get,Post,Put,Delete, Headers,Body,Query,Param,HttpException,HttpStatus,UseInterceptors,UseGuards,UsePipes } from '@nestjs/common';
+import { Controller,Get,Post,Put,Delete, Headers,Body,Query,Param,HttpException,HttpStatus,UseInterceptors,UseGuards,UsePipes,Request } from '@nestjs/common';
 import { UserService } from './service'
 import { User } from './interfaces/index'
 import { Observable } from 'rxjs'
@@ -30,8 +30,8 @@ export class UserController {
     // 登录接口
     @Post('login')
     @UsePipes(new ValidationPipe())
-    async login(@Body() body: UserLoginDto): Promise<Observable<User>>{
-        return  this.userService.login(body)
+    async login(@Body() body: UserLoginDto, @Headers() headers, @Request() req): Promise<Observable<User>>{
+        return  this.userService.login(body, headers, req)
     }
 
     // pdd接口
@@ -120,6 +120,20 @@ export class UserController {
     @UseGuards(AuthGuard)
     async get_userinfo(@Headers() headers): Promise<Observable<User>>{
         return  this.userService.get_userinfo(headers)
+    }
+
+    // 获取登录设备列表
+    @Post('get_login_devices')
+    @UseGuards(AuthGuard)
+    async getLoginDevices(@Headers() headers): Promise<any>{
+        return  this.userService.getLoginDevices(headers)
+    }
+
+    // 踢出设备
+    @Post('kick_device')
+    @UseGuards(AuthGuard)
+    async kickDevice(@Body() body, @Headers() headers): Promise<any>{
+        return  this.userService.kickDevice(body, headers)
     }
 
     //查询所有用户
