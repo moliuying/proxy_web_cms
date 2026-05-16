@@ -7,6 +7,9 @@
 .env.local
 .env.*.local
 
+# Database config (contains credentials, never commit)
+src/config/uri.ts
+
 # Logs
 logs
 *.log
