@@ -5,9 +5,6 @@ import { Observable } from 'rxjs'
 import {  UserRegisterDto,UserLoginDto,UserPwdDto } from "./dto";
 import { ValidationPipe } from '../../core/pipe/validation.pipe';
 import { AuthGuard } from '../../core/guard';
-import { RoleGuard } from '../../core/guard/role.guard';
-import { Roles, Permissions } from '../../core/decorators/role.decorator';
-import { RoleType, Permission } from '../../core/constants/role.constant';
 
 
 @Controller('user')
@@ -62,16 +59,14 @@ export class UserController {
     }
 
     @Post('get_vip_codes')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.VIP_CODE_VIEW)
+    @UseGuards(AuthGuard)
     @UsePipes(new ValidationPipe())
     async get_vip_codes(@Body() body,@Headers() headers): Promise<any>{
         return  this.userService.get_vip_codes(body, headers)
     }
 
     @Post('delVipCode')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.VIP_CODE_DELETE)
+    @UseGuards(AuthGuard)
     @UsePipes(new ValidationPipe())
     async delVipCode(@Body() body,@Headers() headers): Promise<any>{
         return  this.userService.delVipCode(body,headers)
@@ -94,8 +89,7 @@ export class UserController {
 
     // 批量生成激活码
     @Post('addVipCode')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.VIP_CODE_ADD)
+    @UseGuards(AuthGuard)
     @UsePipes(new ValidationPipe())
     async addVipCode(@Body() body,@Headers() headers): Promise<any>{
         return  this.userService.addVipCode(body,headers)
@@ -104,16 +98,14 @@ export class UserController {
 
 
     @Post('addOneUser')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.USER_ADD)
+    @UseGuards(AuthGuard)
     @UsePipes(new ValidationPipe())
     async addOneUser(@Body() body : UserRegisterDto,@Headers() headers): Promise<Observable<User>>{
         return  this.userService.addOneUser(body,headers)
     }
 
     @Post('delOneUser')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.USER_DELETE)
+    @UseGuards(AuthGuard)
     @UsePipes(new ValidationPipe())
     async delOneUser(@Body() body,@Headers() headers): Promise<Observable<User>>{
         return  this.userService.delOneUser(body,headers)
@@ -146,8 +138,7 @@ export class UserController {
 
     //查询所有用户
     @Post('get_users')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.USER_VIEW)
+    @UseGuards(AuthGuard)
     async get_users(@Body() body,@Headers() headers): Promise<any>{
         return  this.userService.get_users(body,headers)
     }
@@ -155,16 +146,14 @@ export class UserController {
 
     //查询所有用户
     @Post('sureSetExpireDate')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.USER_EDIT)
+    @UseGuards(AuthGuard)
     async sureSetExpireDate(@Body() body,@Headers() headers): Promise<any>{
         return  this.userService.sureSetExpireDate(body,headers)
     }
 
     //设置用户名称
     @Post('set_campany')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.USER_MANAGE_ROLE)
+    @UseGuards(AuthGuard)
     async set_campany(@Body() body,@Headers() headers): Promise<any>{
         console.log(123)
         return  this.userService.set_campany(body,headers)

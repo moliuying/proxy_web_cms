@@ -6,9 +6,6 @@ import { Observable } from 'rxjs'
 import { BillDto } from "./dto";
 import {ValidationPipe} from "../../core/pipe/validation.pipe";
 import { AuthGuard } from '../../core/guard';
-import { RoleGuard } from '../../core/guard/role.guard';
-import { Roles, Permissions } from '../../core/decorators/role.decorator';
-import { RoleType, Permission } from '../../core/constants/role.constant';
 
 
 @Controller('index')
@@ -28,8 +25,7 @@ export class IndexController {
 
     //添加窗口代理
     @Post('setPort')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.PROXY_EDIT)
+    @UseGuards(AuthGuard)
     async setPort(@Body() body,@Headers() Headers): Promise<any>{
         // @ts-ignore
         return  this.indexService.setPort(body,Headers)
@@ -38,8 +34,7 @@ export class IndexController {
 
     //添加窗口代理
     @Post('getProxyOne')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.PROXY_VIEW)
+    @UseGuards(AuthGuard)
     async getProxyOne(@Body() body,@Headers() Headers): Promise<any>{
         // @ts-ignore
         return  this.indexService.getProxyOne(body,Headers)
@@ -48,8 +43,7 @@ export class IndexController {
 
     //添加窗口代理
     @Post('getProxyList')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.PROXY_VIEW)
+    @UseGuards(AuthGuard)
     async getProxyList(@Body() body,@Headers() Headers): Promise<any>{
         // @ts-ignore
         return  this.indexService.getProxyList(body,Headers)
@@ -58,8 +52,7 @@ export class IndexController {
     //添加窗口代理
 
     @Post('getGroupList')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.GROUP_VIEW)
+    @UseGuards(AuthGuard)
     async getGroupList(@Body() body,@Headers() Headers): Promise<any>{
         // @ts-ignore
         return  this.indexService.getGroupList(body,Headers)
@@ -67,23 +60,20 @@ export class IndexController {
 
     //添加窗口代理
     @Post('addProxy')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.PROXY_ADD)
+    @UseGuards(AuthGuard)
     async addProxy(@Body() body,@Headers() Headers): Promise<any>{
         // @ts-ignore
         return  this.indexService.addProxy(body,Headers)
     }
     @Post('delProxy')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.PROXY_DELETE)
+    @UseGuards(AuthGuard)
     async delProxy(@Body() body,@Headers() Headers): Promise<any>{
         // @ts-ignore
         return  this.indexService.delProxy(body,Headers)
     }
 
     @Post('editProxy')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.PROXY_EDIT)
+    @UseGuards(AuthGuard)
     async editProxy(@Body() body,@Headers() Headers): Promise<any>{
         // @ts-ignore
         return  this.indexService.editProxy(body,Headers)
@@ -93,16 +83,14 @@ export class IndexController {
 
 
     @Post('addProxyList')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.PROXY_ADD)
+    @UseGuards(AuthGuard)
     async addProxyList(@Body() body,@Headers() Headers): Promise<any>{
         // @ts-ignore
         return  this.indexService.addProxyList(body,Headers)
     }
 
     @Post('addGroup')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.GROUP_ADD)
+    @UseGuards(AuthGuard)
     async addGroup(@Body() body,@Headers() Headers): Promise<any>{
         // @ts-ignore
         return  this.indexService.addGroup(body,Headers)
@@ -114,8 +102,7 @@ export class IndexController {
     // }
     //
     @Post('editGroup')
-    @UseGuards(AuthGuard, RoleGuard)
-    @Permissions(Permission.GROUP_EDIT)
+    @UseGuards(AuthGuard)
     async editGroup(@Body() body,@Headers() Headers): Promise<any>{
         // @ts-ignore
         return  this.indexService.editGroup(body,Headers)
